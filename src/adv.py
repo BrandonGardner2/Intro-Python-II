@@ -39,31 +39,35 @@ room['treasure'].s_to = room['narrow']
 #
 
 # Make a new player object that is currently in the 'outside' room.
-player = Player(room['outside'])
-# Write a loop that:
-#
-# * Prints the current room name
-# * Prints the current description (the textwrap module might be useful here).
-# * Waits for user input and decides what to do.
-#
-# If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
-# If the user enters "q", quit the game.
 
 
-def run_game(final_str=""):
+def initialize_game():
+    user_name = input("Welcome, please enter your name...\n")
+    global player
+    player = Player(user_name, room['outside'])
+    run_game()
+
+
+def run_game(message=""):
     print(player.__str__())
-    if final_str:
-        print(final_str)
-    valid_directions = ("n_to", "w_to", "e_to", "s_to")
+    if message:
+        print(message)
     user = input('Enter a cardinal direction. N, W, S, or E\n')
-    if user == "q" or user == "Q":
+    handle_input(user)
+
+
+def handle_input(_input):
+    if _input == "q" or _input == "Q":
         quit_game()
     else:
-        user = f"{user.lower()}_to"
-        if user in valid_directions:
-            handle_direction(user)
+        valid_directions = ("n", "w", "e", "s")
+        valid_item_uses = ()
+        _input = _input.lower()
+
+        if _input in valid_directions:
+            handle_direction(f"{_input}_to")
+        elif _input in valid_item_uses:
+            handle_item(_input)
         else:
             error_handler()
 
@@ -76,6 +80,10 @@ def handle_direction(direction):
         run_game("There are no rooms in that direction.")
 
 
+def handle_item(item):
+    print('Handling item usage')
+
+
 def error_handler():
     run_game("Invalid input.")
 
@@ -85,4 +93,4 @@ def quit_game():
     exit()
 
 
-run_game()
+initialize_game()
