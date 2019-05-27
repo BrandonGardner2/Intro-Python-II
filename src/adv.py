@@ -52,26 +52,32 @@ player = Player(room['outside'])
 # If the user enters "q", quit the game.
 
 
-def run_game():
+def run_game(final_str=""):
     print(player.__str__())
+    if final_str:
+        print(final_str)
     valid_directions = ("n_to", "w_to", "e_to", "s_to")
     user = input('Enter a cardinal direction. N, W, S, or E\n')
     if user == "q" or user == "Q":
         quit_game()
-    user = f"{user.lower()}_to"
-    if user in valid_directions:
-        handle_direction(user)
     else:
-        error_handler()
+        user = f"{user.lower()}_to"
+        if user in valid_directions:
+            handle_direction(user)
+        else:
+            error_handler()
 
 
 def handle_direction(direction):
-    print("handling direction")
+    try:
+        player.location = player.location.__getattribute__(direction)
+        run_game()
+    except AttributeError:
+        run_game("There are no rooms in that direction.")
 
 
 def error_handler():
-    print("Invalid input.")
-    run_game()
+    run_game("Invalid input.")
 
 
 def quit_game():
