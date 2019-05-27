@@ -10,3 +10,7 @@ class Player:
 
     def __str__(self):
         return f"Location: {getattr(self, 'location')}\n----------"
+
+    def get_inventory(self):
+        results = [i.name for i in self.inventory]
+        return ', '.join(results)
