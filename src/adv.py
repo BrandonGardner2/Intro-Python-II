@@ -1,3 +1,5 @@
+import os
+
 from room import Room
 from player import Player
 
@@ -45,14 +47,17 @@ def initialize_game():
     user_name = input("Welcome, please enter your name...\n")
     global player
     player = Player(user_name, room['outside'])
-    run_game()
+    run_game(f"Welcome {user_name}")
 
 
 def run_game(message=""):
+    os.system('cls')
+    os.system('clear')
     print(player.__str__())
     if message:
-        print(message)
-    user = input('Enter a cardinal direction. N, W, S, or E\n')
+        print(f"******{message}******")
+    user = input(
+        'Enter a cardinal direction. N, W, S, or E\nAlternatively, you can get/take or use followed by an item name\n')
     handle_input(user)
 
 
@@ -61,15 +66,15 @@ def handle_input(_input):
         quit_game()
     else:
         valid_directions = ("n", "w", "e", "s")
-        valid_item_uses = ()
-        _input = _input.lower()
+        valid_item_uses = ("get", "take", "use")
+        _input = _input.lower().split(' ')
 
-        if _input in valid_directions:
-            handle_direction(f"{_input}_to")
-        elif _input in valid_item_uses:
-            handle_item(_input)
+        if _input[0] in valid_directions:
+            handle_direction(f"{_input[0]}_to")
+        elif _input[0] in valid_item_uses:
+            handle_item(_input[0], _input[1])
         else:
-            error_handler()
+            error_handler("Invalid input.")
 
 
 def handle_direction(direction):
@@ -80,12 +85,23 @@ def handle_direction(direction):
         run_game("There are no rooms in that direction.")
 
 
-def handle_item(item):
-    print('Handling item usage')
+def handle_item(action, item):
+    if action == "get" or "take":
+        if item in player.location.items:
+            player.location.items.remove(item)
+            player.inventory.append(item)
+        else:
+            error_handler("There is no item with that name, in this room.")
+    else:
+        if item in player.inventory:
+            print("Item exists, do stuff")
+        else:
+            print("You don't have any items with that name")
+    run_game()
 
 
-def error_handler():
-    run_game("Invalid input.")
+def error_handler(error="There was an error!"):
+    run_game(error)
 
 
 def quit_game():
