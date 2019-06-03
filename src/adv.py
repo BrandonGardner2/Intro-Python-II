@@ -1,4 +1,8 @@
+import os
+
 from room import Room
+from player import Player
+from item import Item
 
 # Declare all the rooms
 
@@ -33,19 +37,96 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+# Add items to rooms
+room['outside'].items = [Item('chicken', 'yummy'), Item('plate', 'holds food')]
+room['foyer'].items = [Item('candle', 'for light'), Item(
+    'picture', 'a picture of a farmer')]
+room['overlook'].items = [Item('pencil', 'to write')]
+room['treasure'].items = [Item('key', 'it opens something..')]
 #
 # Main
 #
 
 # Make a new player object that is currently in the 'outside' room.
 
-# Write a loop that:
-#
-# * Prints the current room name
-# * Prints the current description (the textwrap module might be useful here).
-# * Waits for user input and decides what to do.
-#
-# If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
-# If the user enters "q", quit the game.
+
+def initialize_game():
+    user_name = input("Welcome, please enter your name...\n")
+    global player
+    player = Player(user_name, room['outside'])
+    run_game(f"Welcome {user_name}")
+
+
+def run_game(message=""):
+    os.system('cls')
+    os.system('clear')
+    print(player.__str__())
+    if message:
+        print(f"******{message}******")
+    user = input(
+        'Enter a cardinal direction. N, W, S, or E\nAlternatively, you can get/take or use followed by an item name\n')
+    handle_input(user)
+
+
+def handle_input(_input):
+    if _input == "q" or _input == "Q":
+        quit_game()
+    else:
+        valid_directions = ("n", "w", "e", "s")
+        valid_item_uses = ("get", "take", "drop")
+        valid_inventory_commands = ("inventory", "i")
+        _input = _input.lower().split(' ')
+
+        if _input[0] in valid_directions:
+            handle_direction(f"{_input[0]}_to")
+        elif _input[0] in valid_inventory_commands:
+            handle_inventory()
+        elif _input[0] in valid_item_uses:
+            handle_item(_input[0], _input[1])
+        else:
+            error_handler("Invalid input.")
+
+
+def handle_direction(direction):
+    try:
+        player.location = player.location.__getattribute__(direction)
+        run_game()
+    except AttributeError:
+        run_game("There are no rooms in that direction.")
+
+
+def handle_item(action, item_name):
+    if action == "get" or action == "take":
+        item = [i for i in player.location.items if i.name == item_name]
+        if len(item) > 0:
+            player.location.items.remove(item[0])
+            player.inventory.append(item[0])
+            run_game(item[0].on_take())
+        else:
+            error_handler("There is no item with that name in this room.")
+    else:
+        item = [i for i in player.inventory if i.name == item_name]
+        if len(item) > 0:
+            player.inventory.remove(item[0])
+            run_game(item[0].on_drop())
+        else:
+            print("You don't have any items with that name")
+
+
+def handle_inventory():
+    if len(player.inventory) > 0:
+        run_game(player.get_inventory())
+    else:
+        run_game("Nothing in your inventory")
+
+
+def error_handler(error="There was an error!"):
+    run_game(error)
+
+
+def quit_game():
+    print("Thanks for playing!")
+    exit()
+
+
+initialize_game()
